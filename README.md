@@ -2,11 +2,18 @@
 
 `tdcladder` builds a Liquidity-Weighted TDC / Treasury Moneyness Ladder: a companion measure to the Tier 2 interest-corrected bank-only TDC anchor that asks whether the same Treasury finance flow has different monetary meaning depending on whether investors receive bills, FRNs, short coupons, or long-duration coupons.
 
+TDC means Treasury Deposit Creation: a deposit-accounting measure of the part of deposit flows attributed to Treasury operations. The upstream TDC estimates and component definitions live in [`smkwray/tdcest`](https://github.com/smkwray/tdcest). `tdcladder` does not re-estimate TDC; it uses the Tier 2 interest-corrected bank-only RU flow from that project as its comparison anchor.
+
 The headline object is not a replacement for deposit-accounting TDC. Ordinary TDC tracks the Treasury-attributed component of deposits; `tdcladder` adds a measurement layer:
 
-\[
-LTS_t = \sum_m w_{m,t} \cdot TS_{m,t}
-\]
+```text
+Liquidity-weighted Treasury supply at time t
+  = sum over maturity/security buckets m of:
+      liquidity weight for bucket m at time t
+      x Treasury supply in bucket m at time t
+
+LTS_t = sum_m w_{m,t} * TS_{m,t}
+```
 
 where `TS` is Treasury supply by maturity/security bucket and `w` is an explicit moneyness/liquidity assumption. The weights are labeled measurement assumptions, not structural facts.
 
