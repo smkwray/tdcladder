@@ -1,0 +1,39 @@
+name: market_liquidity_turnover_by_maturity
+contract_version: 2026-05-01-seed
+upstream: market_liquidity
+description: Optional market turnover input by month and maturity bucket or broad security type for turnover-based weights.
+frequency: monthly
+local_path: data/raw/market_liquidity/turnover_by_maturity.csv
+upstream_relative_path: turnover_by_maturity.csv
+required: false
+required_stage: turnover_weights
+primary_key:
+- month
+- security_type
+date_columns:
+- month
+required_columns:
+- month
+- security_type
+- turnover
+amount_columns:
+  trace_volume: USD
+  outstanding_amount: USD
+expected_columns:
+- name: month
+  sample_dtype: str
+- name: security_type
+  sample_dtype: str
+- name: maturity_bucket
+  sample_dtype: str
+- name: turnover
+  sample_dtype: float64
+- name: trace_volume
+  sample_dtype: float64
+- name: outstanding_amount
+  sample_dtype: float64
+- name: source_granularity
+  sample_dtype: str
+qa:
+  allow_duplicate_primary_key: false
+  check_missing_required: true

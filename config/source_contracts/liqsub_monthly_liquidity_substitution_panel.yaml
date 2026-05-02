@@ -1,0 +1,91 @@
+name: liqsub_monthly_liquidity_substitution_panel
+contract_version: 2026-05-01-seed
+upstream: liqsub
+description: Monthly liquidity substitution panel from liqsub.
+frequency: monthly
+local_path: data/raw/liqsub/monthly_liquidity_substitution_panel.csv
+upstream_relative_path: data/clean/monthly_liquidity_substitution_panel.csv
+required: false
+required_stage: monthly_outcome_join
+primary_key:
+- month
+date_columns:
+- month
+required_columns:
+- month
+- deposits
+- on_rrp
+- reserves
+- total_mmf_assets
+amount_columns:
+  deposits: USD millions
+  on_rrp: USD millions
+  reserves: USD millions
+  total_mmf_assets: USD millions
+expected_columns:
+- name: month
+  sample_dtype: str
+- name: gross_bill_issuance
+  sample_dtype: float64
+- name: coupon_issuance
+  sample_dtype: float64
+- name: bill_share
+  sample_dtype: float64
+- name: weighted_maturity_years
+  sample_dtype: float64
+- name: tga_wednesday
+  sample_dtype: float64
+- name: tga_week_average
+  sample_dtype: float64
+- name: reserves
+  sample_dtype: float64
+- name: fed_treasury_holdings
+  sample_dtype: float64
+- name: on_rrp
+  sample_dtype: float64
+- name: deposits
+  sample_dtype: float64
+- name: deposits_nsa
+  sample_dtype: float64
+- name: domestic_deposits
+  sample_dtype: float64
+- name: bank_treasury_agency_securities
+  sample_dtype: float64
+- name: total_bank_credit
+  sample_dtype: float64
+- name: retail_mmf_assets
+  sample_dtype: float64
+- name: institutional_mmf_assets
+  sample_dtype: float64
+- name: iorb_rate
+  sample_dtype: float64
+- name: fed_funds
+  sample_dtype: float64
+- name: sofr
+  sample_dtype: float64
+- name: bill_yield_3mo
+  sample_dtype: float64
+- name: bill_yield
+  sample_dtype: float64
+- name: tga_dts
+  sample_dtype: float64
+- name: mmf_treasury_holdings
+  sample_dtype: float64
+- name: mmf_repo_holdings
+  sample_dtype: float64
+- name: mmf_treasury_repo_holdings
+  sample_dtype: float64
+- name: mmf_on_rrp_exposure
+  sample_dtype: float64
+- name: mmf_agency_holdings
+  sample_dtype: float64
+- name: total_mmf_assets
+  sample_dtype: float64
+- name: tga
+  sample_dtype: float64
+- name: on_rrp_regime
+  sample_dtype: float64
+qa:
+  allow_duplicate_primary_key: false
+  check_weight_bounds: false
+  check_missing_required: true

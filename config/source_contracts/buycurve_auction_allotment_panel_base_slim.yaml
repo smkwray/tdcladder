@@ -1,0 +1,100 @@
+name: buycurve_auction_allotment_panel_base_slim
+contract_version: 2026-05-01-seed
+upstream: buycurve
+description: Auction investor-class allotment panel from buycurve.
+frequency: auction
+local_path: data/raw/buycurve/auction_allotment_panel_base_slim.csv
+upstream_relative_path: data/clean/auction_allotment_panel_base_slim.csv
+required: false
+required_stage: holder_revealed_weights
+primary_key:
+- auction_id
+- broad_investor_class
+date_columns:
+- issue_date
+required_columns:
+- issue_date
+- security_type
+- maturity_bucket
+- broad_investor_class
+- allotment_amount
+amount_columns:
+  allotment_amount: USD
+  allotment_total_clean: USD
+expected_columns:
+- name: cusip
+  sample_dtype: str
+- name: auction_date
+  sample_dtype: str
+- name: issue_date
+  sample_dtype: str
+- name: maturity_date
+  sample_dtype: str
+- name: security_type
+  sample_dtype: str
+- name: security_term
+  sample_dtype: str
+- name: maturity_bucket
+  sample_dtype: str
+- name: original_maturity_days
+  sample_dtype: int64
+- name: original_maturity_years
+  sample_dtype: float64
+- name: offering_amount
+  sample_dtype: int64
+- name: accepted_amount
+  sample_dtype: float64
+- name: tendered_amount
+  sample_dtype: float64
+- name: bid_to_cover
+  sample_dtype: float64
+- name: high_rate
+  sample_dtype: float64
+- name: high_yield
+  sample_dtype: float64
+- name: investment_rate
+  sample_dtype: float64
+- name: high_price
+  sample_dtype: float64
+- name: coupon_rate
+  sample_dtype: float64
+- name: reopening
+  sample_dtype: bool
+- name: cash_management_bill_cmb
+  sample_dtype: str
+- name: raw_investor_class
+  sample_dtype: str
+- name: narrow_investor_class
+  sample_dtype: str
+- name: broad_investor_class
+  sample_dtype: str
+- name: is_bridge_class
+  sample_dtype: bool
+- name: allotment_amount
+  sample_dtype: float64
+- name: allotment_total_clean
+  sample_dtype: float64
+- name: allotment_share_clean
+  sample_dtype: float64
+- name: is_bill
+  sample_dtype: bool
+- name: is_nominal_coupon
+  sample_dtype: bool
+- name: is_frn
+  sample_dtype: bool
+- name: is_tips
+  sample_dtype: bool
+- name: is_base_analysis_security
+  sample_dtype: bool
+- name: source_file
+  sample_dtype: str
+- name: source_file_allotment
+  sample_dtype: str
+- name: auction_id
+  sample_dtype: str
+- name: issue_era
+  sample_dtype: str
+qa:
+  allow_duplicate_primary_key: false
+  check_weight_bounds: false
+  check_missing_required: true

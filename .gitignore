@@ -1,0 +1,54 @@
+# Environment and local machine state
+.env
+.venv/
+venv/
+
+# Local orchestration and planning
+d[o]/
+d[o]/**
+AGENTS.md
+C?AUDE.md
+GEMINI.md
+.[c]odex/
+.[c]l?ude/
+.agents/
+*[h]andoff*
+*audit*
+*[g]ptpro*
+
+# Local data copies and generated pipeline artifacts
+data/raw/**
+!data/raw/
+!data/raw/.gitkeep
+!data/raw/README.md
+!data/raw/**/
+!data/raw/**/.gitkeep
+data/interim/**
+!data/interim/
+!data/interim/.gitkeep
+data/clean/**
+!data/clean/
+!data/clean/.gitkeep
+output/**
+!output/
+!output/.gitkeep
+!output/**/
+!output/**/.gitkeep
+*.zip
+*.tar
+*.tar.gz
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+/dist/
+/build/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/

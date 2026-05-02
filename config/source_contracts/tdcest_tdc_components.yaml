@@ -1,0 +1,113 @@
+name: tdcest_tdc_components
+contract_version: 2026-05-01-seed
+upstream: tdcest
+description: Quarterly TDC components from tdcest.
+frequency: quarterly
+local_path: data/raw/tdcest/tdc_components.csv
+upstream_relative_path: data/processed/tdc_components.csv
+required: false
+required_stage: quarterly_tdc_comparison
+primary_key:
+- date
+date_columns:
+- date
+required_columns:
+- date
+- fed_tsy_tx
+- row_tsy_tx
+amount_columns:
+  fed_tsy_tx: USD millions
+  row_tsy_tx: USD millions
+expected_columns:
+- name: date
+  sample_dtype: str
+- name: fed_tsy_tx
+  sample_dtype: float64
+- name: bank_depository_tsy_tx
+  sample_dtype: float64
+- name: np_credit_unions_tsy_tx
+  sample_dtype: float64
+- name: corp_credit_unions_tsy_tx
+  sample_dtype: float64
+- name: ncua_capitalization_deposit_tx
+  sample_dtype: float64
+- name: credit_unions_total_tsy_tx_reconstructed
+  sample_dtype: float64
+- name: credit_unions_total_tsy_tx_direct
+  sample_dtype: float64
+- name: credit_unions_total_gap_tx
+  sample_dtype: float64
+- name: broad_depository_np_cu_tsy_tx
+  sample_dtype: float64
+- name: broad_depository_np_corp_cu_tsy_tx
+  sample_dtype: float64
+- name: broad_depository_full_cu_tsy_tx
+  sample_dtype: float64
+- name: row_tsy_tx
+  sample_dtype: float64
+- name: ru_bank_only_tsy_tx
+  sample_dtype: float64
+- name: ru_broad_depository_np_cu_tsy_tx
+  sample_dtype: float64
+- name: ru_broad_depository_np_corp_cu_tsy_tx
+  sample_dtype: float64
+- name: ru_broad_depository_full_cu_tsy_tx
+  sample_dtype: float64
+- name: minus_treasury_operating_cash_tx
+  sample_dtype: float64
+- name: fed_remit_positive
+  sample_dtype: float64
+- name: fed_tsy_coupon_interest_proxy
+  sample_dtype: float64
+- name: bank_tsy_coupon_interest_proxy
+  sample_dtype: float64
+- name: row_tsy_coupon_interest_proxy
+  sample_dtype: float64
+- name: bank_noninterest_outlay_proxy
+  sample_dtype: float64
+- name: row_noninterest_outlay_proxy
+  sample_dtype: float64
+- name: bank_nonborrow_receipt_proxy
+  sample_dtype: float64
+- name: row_nonborrow_receipt_proxy
+  sample_dtype: float64
+- name: mint_cb_cash_factor_proxy
+  sample_dtype: float64
+- name: tdc_base_bank_only_ru_flow
+  sample_dtype: float64
+- name: tdc_base_broad_depository_np_cu_ru_flow
+  sample_dtype: float64
+- name: du_residual_tsy_purchase_proxy
+  sample_dtype: float64
+- name: du_residual_tsy_purchase_bank_only_ru_proxy
+  sample_dtype: float64
+- name: du_residual_tsy_purchase_np_cu_ru_proxy
+  sample_dtype: float64
+- name: du_residual_tsy_purchase_np_corp_cu_ru_proxy
+  sample_dtype: float64
+- name: du_residual_tsy_purchase_full_cu_ru_proxy
+  sample_dtype: float64
+- name: du_residual_security_flow_proxy
+  sample_dtype: float64
+- name: du_domestic_nonfinancial_security_flow_proxy
+  sample_dtype: float64
+- name: du_broad_private_security_flow_proxy
+  sample_dtype: float64
+- name: du_noninterest_outlay_proxy
+  sample_dtype: float64
+- name: du_receipt_proxy
+  sample_dtype: float64
+- name: du_coupon_proxy_direct_narrow
+  sample_dtype: float64
+- name: du_coupon_proxy_direct_broad
+  sample_dtype: float64
+- name: du_coupon_proxy_residual
+  sample_dtype: float64
+- name: du_coupon_proxy_primary
+  sample_dtype: float64
+- name: du_coupon_proxy_selected_narrow
+  sample_dtype: float64
+qa:
+  allow_duplicate_primary_key: false
+  check_weight_bounds: false
+  check_missing_required: true

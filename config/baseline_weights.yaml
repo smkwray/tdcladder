@@ -1,0 +1,116 @@
+metadata:
+  interpretation: >
+    Fixed weights are transparent measurement assumptions for a moneyness ladder.
+    They are not structural estimates. Sensitivity families are included by design.
+  unit_interval: true
+  duration_guardrail: >
+    Long-duration securities remain low-moneyness even when market trading volume is high.
+
+weight_ladders:
+  fixed_baseline:
+    description: >
+      Project-1 starter ladder: bills high, FRNs/short coupons intermediate, long coupons low.
+    maturity_bucket_weights:
+      0_3m: 0.98
+      3_6m: 0.94
+      6_12m: 0.88
+      1_2y: 0.66
+      2_3y: 0.52
+      3_5y: 0.38
+      5_7y: 0.25
+      7_10y: 0.18
+      10_20y: 0.10
+      20_30y: 0.06
+      30y_plus: 0.04
+    security_type_multipliers:
+      Bill: 1.00
+      CMB: 1.00
+      FRN: 1.05
+      Note: 1.00
+      Bond: 0.85
+      TIPS: 0.70
+      Unknown: 0.80
+    security_type_floors:
+      Bill: 0.85
+      CMB: 0.85
+      FRN: 0.72
+    security_type_caps:
+      Bill: 1.00
+      CMB: 1.00
+      FRN: 0.92
+      Note: 0.75
+      Bond: 0.20
+      TIPS: 0.18
+      Unknown: 0.75
+
+  fixed_conservative_duration:
+    description: >
+      Sensitivity with stronger duration penalty beyond one year.
+    maturity_bucket_weights:
+      0_3m: 0.96
+      3_6m: 0.90
+      6_12m: 0.80
+      1_2y: 0.50
+      2_3y: 0.35
+      3_5y: 0.22
+      5_7y: 0.14
+      7_10y: 0.09
+      10_20y: 0.05
+      20_30y: 0.03
+      30y_plus: 0.02
+    security_type_multipliers:
+      Bill: 1.00
+      CMB: 1.00
+      FRN: 1.00
+      Note: 1.00
+      Bond: 0.80
+      TIPS: 0.65
+      Unknown: 0.75
+    security_type_floors:
+      Bill: 0.80
+      CMB: 0.80
+      FRN: 0.65
+    security_type_caps:
+      Bill: 1.00
+      CMB: 1.00
+      FRN: 0.85
+      Note: 0.65
+      Bond: 0.15
+      TIPS: 0.12
+      Unknown: 0.65
+
+  fixed_cash_like_generous:
+    description: >
+      Sensitivity giving more money-like status to FRNs and short coupons while preserving long-duration penalty.
+    maturity_bucket_weights:
+      0_3m: 1.00
+      3_6m: 0.97
+      6_12m: 0.92
+      1_2y: 0.76
+      2_3y: 0.62
+      3_5y: 0.46
+      5_7y: 0.32
+      7_10y: 0.22
+      10_20y: 0.13
+      20_30y: 0.08
+      30y_plus: 0.05
+    security_type_multipliers:
+      Bill: 1.00
+      CMB: 1.00
+      FRN: 1.08
+      Note: 1.00
+      Bond: 0.90
+      TIPS: 0.75
+      Unknown: 0.85
+    security_type_floors:
+      Bill: 0.88
+      CMB: 0.88
+      FRN: 0.78
+    security_type_caps:
+      Bill: 1.00
+      CMB: 1.00
+      FRN: 0.96
+      Note: 0.82
+      Bond: 0.25
+      TIPS: 0.22
+      Unknown: 0.82

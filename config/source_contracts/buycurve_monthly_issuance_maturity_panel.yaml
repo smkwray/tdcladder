@@ -1,0 +1,44 @@
+name: buycurve_monthly_issuance_maturity_panel
+contract_version: 2026-05-01-seed
+upstream: buycurve
+description: Monthly Treasury issuance/maturity panel from buycurve.
+frequency: monthly
+local_path: data/raw/buycurve/monthly_issuance_maturity_panel.csv
+upstream_relative_path: data/clean/monthly_issuance_maturity_panel.csv
+required: true
+required_stage: supply
+primary_key:
+- month
+- security_type
+- maturity_bucket
+date_columns:
+- month
+required_columns:
+- month
+- security_type
+- maturity_bucket
+- accepted_amount_sum
+amount_columns:
+  accepted_amount_sum: USD
+  offering_amount_sum: USD
+expected_columns:
+- name: month
+  sample_dtype: str
+- name: security_type
+  sample_dtype: str
+- name: maturity_bucket
+  sample_dtype: str
+- name: auction_count
+  sample_dtype: int64
+- name: accepted_amount_sum
+  sample_dtype: float64
+- name: offering_amount_sum
+  sample_dtype: int64
+- name: weighted_maturity_years
+  sample_dtype: float64
+- name: bill_share_by_accepted_amount
+  sample_dtype: float64
+qa:
+  allow_duplicate_primary_key: false
+  check_weight_bounds: false
+  check_missing_required: true

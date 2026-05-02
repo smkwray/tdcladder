@@ -1,0 +1,29 @@
+metadata:
+  interpretation: >
+    Investor-class scores are measurement assumptions. Auction allotments reveal initial buyers,
+    not final holders, so holder-revealed weights are blended with the fixed duration ladder.
+blend:
+  fixed_weight_share: 0.60
+  holder_score_share: 0.40
+z1_stock_context_blend:
+  fixed_weight_share: 0.75
+  holder_score_share: 0.25
+cash_like_class_scores:
+  banks: 0.85
+  depository_institutions: 0.85
+  money_market_cash: 0.90
+  dealers: 0.35
+  investment_funds: 0.55
+  individuals: 0.30
+  foreign_international: 0.25
+  pensions_insurers: 0.05
+  federal_reserve: 0.00
+  other: 0.20
+  unknown: 0.20
+private_sector_exclusions:
+  - federal_reserve
+notes:
+  - Federal Reserve allotments are scored at zero for the private-sector moneyness index.
+  - Dealers receive a partial score because primary-market intermediation is liquid but not final cash demand.
+  - Investment funds receive a middle score because the class mixes MMFs/cash funds and long-duration funds.
+  - Z.1 holder-stock context is aggregate quarterly context and does not identify maturity-specific final holders.

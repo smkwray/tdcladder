@@ -1,0 +1,37 @@
+name: treasury_mspd_table_3_market
+contract_version: 2026-05-01-stock-raw
+upstream: treasury
+description: FiscalData Monthly Statement of the Public Debt Table 3 marketable security detail.
+frequency: monthly
+local_path: data/raw/treasury/mspd_table_3_market.csv
+required: false
+required_stage: stock_supply_raw
+primary_key: []
+date_columns:
+- record_date
+required_columns:
+- record_date
+- security_type_desc
+- security_class1_desc
+- security_class2_desc
+- maturity_date
+- outstanding_amt
+amount_columns:
+  outstanding_amt: USD millions
+expected_columns:
+- name: record_date
+  sample_dtype: str
+- name: security_type_desc
+  sample_dtype: str
+- name: security_class1_desc
+  sample_dtype: str
+- name: security_class2_desc
+  sample_dtype: str
+- name: maturity_date
+  sample_dtype: str
+- name: outstanding_amt
+  sample_dtype: float64
+qa:
+  allow_duplicate_primary_key: true
+  check_weight_bounds: false
+  check_missing_required: true

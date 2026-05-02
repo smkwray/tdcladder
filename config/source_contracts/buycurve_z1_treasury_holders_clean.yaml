@@ -1,0 +1,43 @@
+name: buycurve_z1_treasury_holders_clean
+contract_version: 2026-05-01-holder-stock-context
+upstream: buycurve
+description: Optional quarterly Z.1 Treasury holder-stock context normalized by buycurve.
+frequency: quarterly
+local_path: data/raw/buycurve/z1_treasury_holders_clean.csv
+upstream_relative_path: data/interim/z1_treasury_holders_clean.csv
+required: false
+required_stage: holder_stock_context_weights
+primary_key:
+- quarter
+- z1_series
+- measure
+date_columns:
+- quarter
+required_columns:
+- quarter
+- broad_investor_class
+- measure
+- value
+amount_columns:
+  value: USD millions
+expected_columns:
+- name: quarter
+  sample_dtype: str
+- name: z1_series
+  sample_dtype: str
+- name: z1_code
+  sample_dtype: str
+- name: z1_sector
+  sample_dtype: str
+- name: broad_investor_class
+  sample_dtype: str
+- name: measure
+  sample_dtype: str
+- name: value
+  sample_dtype: float64
+- name: source_file
+  sample_dtype: str
+qa:
+  allow_duplicate_primary_key: false
+  check_weight_bounds: false
+  check_missing_required: true

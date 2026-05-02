@@ -1,0 +1,37 @@
+name: treasury_monthly_outstanding_by_maturity
+contract_version: 2026-05-01-stock-basis
+upstream: treasury
+description: Optional month-end Treasury outstanding stock by security type and remaining-maturity bucket, preferably derived from MSPD/FiscalData public debt outstanding records.
+frequency: monthly
+local_path: data/raw/treasury/monthly_outstanding_by_maturity.csv
+upstream_relative_path: data/clean/monthly_outstanding_by_maturity.csv
+required: false
+required_stage: stock_supply_sensitivity
+primary_key:
+- month
+- security_type
+- maturity_bucket
+date_columns:
+- month
+required_columns:
+- month
+- security_type
+- maturity_bucket
+- outstanding_amount
+amount_columns:
+  outstanding_amount: USD
+expected_columns:
+- name: month
+  sample_dtype: str
+- name: security_type
+  sample_dtype: str
+- name: maturity_bucket
+  sample_dtype: str
+- name: outstanding_amount
+  sample_dtype: float64
+- name: weighted_maturity_years
+  sample_dtype: float64
+qa:
+  allow_duplicate_primary_key: false
+  check_weight_bounds: false
+  check_missing_required: true

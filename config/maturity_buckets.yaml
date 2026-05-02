@@ -1,0 +1,71 @@
+bucket_scheme: buycurve_seed_monthly
+notes: >
+  Canonical buckets match the reusable buycurve monthly issuance panel where possible.
+  Aliases let older or broader bucket labels validate without hard-coding machine-specific paths.
+maturity_buckets:
+  - name: 0_3m
+    label: 0-3 months
+    min_days: 0
+    max_days: 92
+    liquidity_rank: 1
+    aliases: [0_1m, 1_3m]
+  - name: 3_6m
+    label: 3-6 months
+    min_days: 93
+    max_days: 183
+    liquidity_rank: 2
+    aliases: []
+  - name: 6_12m
+    label: 6-12 months
+    min_days: 184
+    max_days: 366
+    liquidity_rank: 3
+    aliases: []
+  - name: 1_2y
+    label: 1-2 years
+    min_days: 367
+    max_days: 731
+    liquidity_rank: 4
+    aliases: []
+  - name: 2_3y
+    label: 2-3 years
+    min_days: 732
+    max_days: 1096
+    liquidity_rank: 5
+    aliases: []
+  - name: 3_5y
+    label: 3-5 years
+    min_days: 1097
+    max_days: 1827
+    liquidity_rank: 6
+    aliases: [2_5y]
+  - name: 5_7y
+    label: 5-7 years
+    min_days: 1828
+    max_days: 2557
+    liquidity_rank: 7
+    aliases: []
+  - name: 7_10y
+    label: 7-10 years
+    min_days: 2558
+    max_days: 3653
+    liquidity_rank: 8
+    aliases: [5_10y]
+  - name: 10_20y
+    label: 10-20 years
+    min_days: 3654
+    max_days: 7305
+    liquidity_rank: 9
+    aliases: []
+  - name: 20_30y
+    label: 20-30 years
+    min_days: 7306
+    max_days: 10958
+    liquidity_rank: 10
+    aliases: []
+  - name: 30y_plus
+    label: 30+ years
+    min_days: 10959
+    max_days: null
+    liquidity_rank: 11
+    aliases: [30y_plus, 30_plus]

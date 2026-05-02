@@ -1,0 +1,86 @@
+name: tdcest_tdc_estimates
+contract_version: 2026-05-01-seed
+upstream: tdcest
+description: Quarterly TDC estimates from tdcest.
+frequency: quarterly
+local_path: data/raw/tdcest/tdc_estimates.csv
+upstream_relative_path: data/processed/tdc_estimates.csv
+required: false
+required_stage: quarterly_tdc_comparison
+primary_key:
+- date
+date_columns:
+- date
+required_columns:
+- date
+- tdc_tier2_interest_corrected_bank_only_ru_flow
+- tdc_base_broad_depository_np_cu_ru_flow
+amount_columns:
+  tdc_base_bank_only_ru_flow: USD millions
+  tdc_tier2_interest_corrected_bank_only_ru_flow: USD millions
+  tdc_base_broad_depository_np_cu_ru_flow: USD millions
+expected_columns:
+- name: date
+  sample_dtype: str
+- name: tdc_base_bank_only_ru_flow
+  sample_dtype: float64
+- name: tdc_base_broad_depository_np_cu_ru_flow
+  sample_dtype: float64
+- name: tdc_broad_depository_np_corp_cu_ru_flow
+  sample_dtype: float64
+- name: tdc_credit_union_aggregate_sensitivity
+  sample_dtype: float64
+- name: tdc_domestic_bank_only_ru_flow
+  sample_dtype: float64
+- name: tdc_no_remit_bank_only
+  sample_dtype: float64
+- name: tdc_tier1_fed_corrected_bank_only_ru_flow
+  sample_dtype: float64
+- name: tdc_tier1_fed_corrected_broad_depository_np_cu_ru_flow
+  sample_dtype: float64
+- name: tdc_tier1_fed_corrected_domestic_bank_only_ru_flow
+  sample_dtype: float64
+- name: tdc_tier2_interest_corrected_domestic_bank_only_ru_flow
+  sample_dtype: float64
+- name: tdc_tier2_interest_corrected_bank_only_ru_flow
+  sample_dtype: float64
+- name: tdc_tier2_interest_corrected_broad_depository_np_cu_ru_flow
+  sample_dtype: float64
+- name: tdc_tier3_fiscal_corrected_domestic_bank_only_ru_flow
+  sample_dtype: float64
+- name: tdc_tier3_fiscal_corrected_bank_only_ru_flow
+  sample_dtype: float64
+- name: tdc_tier3_fiscal_corrected_broad_depository_np_cu_ru_flow
+  sample_dtype: float64
+- name: tdc_level_bank_only_sensitivity
+  sample_dtype: float64
+- name: tdc_level_broad_depository_np_cu_sensitivity
+  sample_dtype: float64
+- name: tdc_decomposition_proxy_bank_centric
+  sample_dtype: float64
+- name: tdc_bank_only_extended_1990
+  sample_dtype: float64
+- name: tdc_broad_depository_extended_1990
+  sample_dtype: float64
+- name: tdc_base_bank_only_ru_flow_4q
+  sample_dtype: float64
+- name: tdc_base_bank_only_ru_flow_cum
+  sample_dtype: float64
+- name: tdc_du_fiscal_flow_first_pass_narrow
+  sample_dtype: float64
+- name: tdc_du_fiscal_flow_first_pass_broad
+  sample_dtype: float64
+- name: tdc_du_selected_domestic_nonfinancial_proxy
+  sample_dtype: float64
+- name: tdc_du_residual_proxy_bank_only_ru
+  sample_dtype: float64
+- name: tdc_du_residual_proxy_np_cu_ru
+  sample_dtype: float64
+- name: tdc_du_residual_proxy_np_corp_cu_ru
+  sample_dtype: float64
+- name: tdc_du_residual_proxy_full_cu_ru
+  sample_dtype: float64
+qa:
+  allow_duplicate_primary_key: false
+  check_weight_bounds: false
+  check_missing_required: true

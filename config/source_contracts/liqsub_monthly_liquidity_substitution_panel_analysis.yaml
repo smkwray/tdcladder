@@ -1,0 +1,198 @@
+name: liqsub_monthly_liquidity_substitution_panel_analysis
+contract_version: 2026-05-01-seed
+upstream: liqsub
+description: Monthly analysis panel from liqsub with regimes, changes, and first-pass
+  shock diagnostics.
+frequency: monthly
+local_path: data/raw/liqsub/monthly_liquidity_substitution_panel_analysis.csv
+upstream_relative_path: data/clean/monthly_liquidity_substitution_panel_analysis.csv
+required: false
+required_stage: monthly_outcome_join
+primary_key:
+- month
+date_columns:
+- month
+required_columns:
+- month
+- deposits
+- on_rrp
+- reserves
+- total_mmf_assets
+amount_columns:
+  deposits: USD millions
+  on_rrp: USD millions
+  reserves: USD millions
+  total_mmf_assets: USD millions
+expected_columns:
+- name: month
+  sample_dtype: str
+- name: gross_bill_issuance
+  sample_dtype: float64
+- name: coupon_issuance
+  sample_dtype: float64
+- name: bill_share
+  sample_dtype: float64
+- name: weighted_maturity_years
+  sample_dtype: float64
+- name: tga_wednesday
+  sample_dtype: float64
+- name: tga_week_average
+  sample_dtype: float64
+- name: reserves
+  sample_dtype: float64
+- name: fed_treasury_holdings
+  sample_dtype: float64
+- name: on_rrp
+  sample_dtype: float64
+- name: deposits
+  sample_dtype: float64
+- name: deposits_nsa
+  sample_dtype: float64
+- name: domestic_deposits
+  sample_dtype: float64
+- name: bank_treasury_agency_securities
+  sample_dtype: float64
+- name: total_bank_credit
+  sample_dtype: float64
+- name: retail_mmf_assets
+  sample_dtype: float64
+- name: institutional_mmf_assets
+  sample_dtype: float64
+- name: iorb_rate
+  sample_dtype: float64
+- name: fed_funds
+  sample_dtype: float64
+- name: sofr
+  sample_dtype: float64
+- name: bill_yield_3mo
+  sample_dtype: float64
+- name: bill_yield
+  sample_dtype: float64
+- name: tga_dts
+  sample_dtype: float64
+- name: mmf_treasury_holdings
+  sample_dtype: float64
+- name: mmf_repo_holdings
+  sample_dtype: float64
+- name: mmf_treasury_repo_holdings
+  sample_dtype: float64
+- name: mmf_on_rrp_exposure
+  sample_dtype: float64
+- name: mmf_agency_holdings
+  sample_dtype: float64
+- name: total_mmf_assets
+  sample_dtype: float64
+- name: tga
+  sample_dtype: float64
+- name: on_rrp_regime
+  sample_dtype: float64
+- name: on_rrp_regime_fixed
+  sample_dtype: float64
+- name: on_rrp_regime_fixed_250b_1000b
+  sample_dtype: float64
+- name: on_rrp_regime_low_100b_750b
+  sample_dtype: float64
+- name: on_rrp_regime_wide_500b_1500b
+  sample_dtype: float64
+- name: on_rrp_regime_tercile
+  sample_dtype: float64
+- name: fed_treasury_holdings_12m_change
+  sample_dtype: float64
+- name: qe_qt_regime
+  sample_dtype: str
+- name: high_rate_regime
+  sample_dtype: float64
+- name: bill_iorb_spread
+  sample_dtype: float64
+- name: sofr_iorb_spread
+  sample_dtype: float64
+- name: d_deposits
+  sample_dtype: float64
+- name: d_domestic_deposits
+  sample_dtype: float64
+- name: d_total_mmf_assets
+  sample_dtype: float64
+- name: d_mmf_treasury_holdings
+  sample_dtype: float64
+- name: d_mmf_repo_holdings
+  sample_dtype: float64
+- name: d_mmf_on_rrp_exposure
+  sample_dtype: float64
+- name: d_on_rrp
+  sample_dtype: float64
+- name: d_reserves
+  sample_dtype: float64
+- name: d_tga
+  sample_dtype: float64
+- name: gross_bill_issuance_100b
+  sample_dtype: float64
+- name: coupon_issuance_100b
+  sample_dtype: float64
+- name: month_of_year
+  sample_dtype: int64
+- name: time_index
+  sample_dtype: float64
+- name: month_02
+  sample_dtype: float64
+- name: month_03
+  sample_dtype: float64
+- name: month_04
+  sample_dtype: float64
+- name: month_05
+  sample_dtype: float64
+- name: month_06
+  sample_dtype: float64
+- name: month_07
+  sample_dtype: float64
+- name: month_08
+  sample_dtype: float64
+- name: month_09
+  sample_dtype: float64
+- name: month_10
+  sample_dtype: float64
+- name: month_11
+  sample_dtype: float64
+- name: month_12
+  sample_dtype: float64
+- name: lag1_d_deposits
+  sample_dtype: float64
+- name: pre3_d_deposits
+  sample_dtype: float64
+- name: lag1_d_total_mmf_assets
+  sample_dtype: float64
+- name: pre3_d_total_mmf_assets
+  sample_dtype: float64
+- name: lag1_d_mmf_treasury_holdings
+  sample_dtype: float64
+- name: pre3_d_mmf_treasury_holdings
+  sample_dtype: float64
+- name: lag1_d_on_rrp
+  sample_dtype: float64
+- name: pre3_d_on_rrp
+  sample_dtype: float64
+- name: lag1_d_reserves
+  sample_dtype: float64
+- name: pre3_d_reserves
+  sample_dtype: float64
+- name: lag1_d_tga
+  sample_dtype: float64
+- name: pre3_d_tga
+  sample_dtype: float64
+- name: is_future_or_scheduled
+  sample_dtype: bool
+- name: lag1_gross_bill_issuance_100b
+  sample_dtype: float64
+- name: bill_supply_shock_resid_100b
+  sample_dtype: float64
+- name: bill_supply_shock_z
+  sample_dtype: float64
+- name: bill_supply_shock_threshold_100b
+  sample_dtype: float64
+- name: large_positive_bill_shock
+  sample_dtype: bool
+- name: isolated_large_positive_bill_shock
+  sample_dtype: bool
+qa:
+  allow_duplicate_primary_key: false
+  check_weight_bounds: false
+  check_missing_required: true

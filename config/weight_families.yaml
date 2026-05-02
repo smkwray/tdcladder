@@ -1,0 +1,33 @@
+weight_families:
+  fixed_baseline:
+    class: fixed
+    active: true
+    description: Transparent baseline fixed ladder by maturity bucket and security type.
+  fixed_conservative_duration:
+    class: fixed
+    active: true
+    description: Duration-penalized sensitivity ladder.
+  fixed_cash_like_generous:
+    class: fixed
+    active: true
+    description: Short-instrument generous sensitivity ladder.
+  price_first_pass:
+    class: price
+    active: false
+    description: First-pass rate/specialness adjustment using liqsub rate columns when available.
+  price_convenience_yield:
+    class: price
+    active: true
+    description: Explicit convenience-yield sensitivity using bill-IORB specialness and SOFR-IORB funding-pressure penalty.
+  turnover_duration_adjusted:
+    class: turnover
+    active: true
+    description: Turnover proxy/stub blended with duration penalty; high long-bond turnover is not treated as money-likeness.
+  holder_revealed_first_pass:
+    class: holder_revealed
+    active: true
+    description: Auction buyer-composition weight blended with fixed ladder.
+  holder_stock_context_z1:
+    class: holder_context
+    active: true
+    description: Diagnostic quarterly Z.1 holder-stock context blended with fixed ladder.

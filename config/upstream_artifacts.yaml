@@ -1,0 +1,42 @@
+upstreams:
+  buycurve:
+    role: Treasury issuance, maturity buckets, and auction buyer composition.
+    local_raw_dir: data/raw/buycurve
+    preferred_artifacts:
+      - data/clean/monthly_issuance_maturity_panel.csv
+      - data/clean/auction_allotment_panel_base_slim.csv
+      - data/interim/z1_treasury_holders_clean.csv
+    reuse_guidance: Copy explicit exports into this project's data/raw/buycurve directory.
+  liqsub:
+    role: Deposits, MMFs, ON RRP, reserves, TGA, and liquidity-substitution outcomes.
+    local_raw_dir: data/raw/liqsub
+    preferred_artifacts:
+      - data/clean/monthly_liquidity_substitution_panel.csv
+      - data/clean/monthly_liquidity_substitution_panel_analysis.csv
+    reuse_guidance: Use the monthly panel first; weekly outputs remain diagnostic unless gates are added.
+  tdcest:
+    role: Canonical quarterly TDC estimates and components.
+    local_raw_dir: data/raw/tdcest
+    preferred_artifacts:
+      - data/processed/tdc_estimates.csv
+      - data/processed/tdc_components.csv
+    reuse_guidance: Use as quarterly TDC anchor before rebuilding Z.1 inputs.
+  tdcpass:
+    role: Deposit pass-through and strict-versus-broad comparison context.
+    local_raw_dir: data/raw/tdcpass
+    preferred_artifacts:
+      - data/derived/quarterly_panel.csv
+    reuse_guidance: Use for pass-through validation and source-boundary checks.
+  market_liquidity:
+    role: Optional turnover data by maturity bucket.
+    local_raw_dir: data/raw/market_liquidity
+    preferred_artifacts:
+      - turnover_by_maturity.csv
+    reuse_guidance: Optional; turnover weights fall back to duration-adjusted fixed assumptions when absent.
+  treasury:
+    role: Optional Treasury outstanding-stock supply basis by maturity bucket.
+    local_raw_dir: data/raw/treasury
+    preferred_artifacts:
+      - data/raw/treasury/mspd_table_3_market.csv
+      - data/clean/monthly_outstanding_by_maturity.csv
+    reuse_guidance: Optional MSPD/FiscalData-derived stock basis; refresh with `tdcladder download-treasury-stock` and publish in parallel with issuance flow when present.
