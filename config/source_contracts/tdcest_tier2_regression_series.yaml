@@ -1,0 +1,35 @@
+name: tdcest_tier2_regression_series
+contract_version: 2026-05-07-tier2-regression
+upstream: tdcest
+description: Long-history Tier 2 regression handoff from tdcest.
+frequency: quarterly
+local_path: data/raw/tdcest/tdc_tier2_regression_series.csv
+upstream_relative_path: data/processed/tdc_tier2_regression_series.csv
+required: false
+required_stage: quarterly_tdc_comparison
+primary_key:
+- date
+date_columns:
+- date
+required_columns:
+- date
+- tdc_tier2_regression_mmf_rrp_prop_bank_only_ru_flow
+- tdc_tier2_regression_mmf_rrp_prop_depository_institution_np_cu_ru_flow
+amount_columns:
+  tdc_tier2_regression_mmf_rrp_prop_bank_only_ru_flow: USD millions
+  tdc_tier2_regression_mmf_rrp_prop_depository_institution_np_cu_ru_flow: USD millions
+expected_columns:
+- name: date
+  sample_dtype: str
+- name: tdc_tier2_regression_mmf_rrp_prop_bank_only_ru_flow
+  sample_dtype: float64
+- name: tdc_tier2_regression_mmf_rrp_prop_depository_institution_np_cu_ru_flow
+  sample_dtype: float64
+- name: tier2_regression_bank_row_method_tier
+  sample_dtype: str
+- name: tier2_regression_di_method_tier
+  sample_dtype: str
+qa:
+  allow_duplicate_primary_key: false
+  check_weight_bounds: false
+  check_missing_required: true

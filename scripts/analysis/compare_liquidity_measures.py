@@ -6,8 +6,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-TDC_ANCHOR_COL = "tdc_tier2_interest_corrected_bank_only_ru_flow"
-TDC_ANCHOR_LABEL = "Tier 2 interest-corrected bank-only RU flow"
+TDC_ANCHOR_COL = "tdc_tier2_regression_mmf_rrp_prop_bank_only_ru_flow"
+TDC_ANCHOR_LABEL = "Long-history Tier 2 regression/MMF-RRP bank-only RU flow"
 CORE_WEIGHT_FAMILIES = (
     "fixed_baseline",
     "fixed_conservative_duration",
@@ -72,6 +72,9 @@ def _add_unit_scaled_columns(frame: pd.DataFrame) -> pd.DataFrame:
     ]
     usd_millions = [
         TDC_ANCHOR_COL,
+        "tdc_tier2_interest_corrected_bank_only_ru_flow",
+        "tdc_tier2_canonical_depository_institution_mmf_rrp_prop_ru_flow",
+        "tdc_tier2_regression_mmf_rrp_prop_depository_institution_np_cu_ru_flow",
         "d_deposits",
         "d_domestic_deposits",
         "d_total_mmf_assets",
@@ -1065,7 +1068,7 @@ def write_release_readiness_report(out_dir: Path) -> None:
         "## Claim Boundary",
         "",
         "- Core object: liquidity-weighted Treasury composition ladder.",
-        "- TDC anchor: Tier 2 interest-corrected bank-only RU flow only.",
+        "- TDC anchor: long-history Tier 2 regression/MMF-RRP bank-only RU flow; legacy H15/bank-only and short modern canonical rows remain context/sensitivity columns where imported.",
         "- Headline basis: gross accepted auction issuance flow.",
         "- Headline weights: fixed baseline plus fixed sensitivity band.",
         "- Stock, price, turnover, auction-buyer, and Z.1 holder-context outputs are diagnostic or appendix surfaces.",

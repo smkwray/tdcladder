@@ -21,7 +21,8 @@ def test_build_all_on_synthetic_fixture(fixture_project) -> None:
     assert set(outputs["raw_treasury_supply_by_maturity"]["supply_basis"]) == {"issuance_flow"}
     assert "raw_weighted_maturity_years_q" in outputs["quarterly_tdc_comparison_panel"].columns
     assert "raw_treasury_supply_q_usd_billions" in outputs["quarterly_tdc_comparison_panel"].columns
-    assert "tdc_tier2_interest_corrected_bank_only_ru_flow_usd_billions" in outputs["quarterly_tdc_comparison_panel"].columns
+    assert "tdc_tier2_regression_mmf_rrp_prop_bank_only_ru_flow_usd_billions" in outputs["quarterly_tdc_comparison_panel"].columns
+    assert "tdc_tier2_canonical_depository_institution_mmf_rrp_prop_ru_flow_usd_billions" in outputs["quarterly_tdc_comparison_panel"].columns
     assert "price_first_pass" not in set(outputs["liquidity_weights"]["weight_family"])
     assert set(outputs["liquidity_weights"]["weight_family"]).issuperset({
         "fixed_baseline",
@@ -96,3 +97,11 @@ def test_build_all_keeps_optional_stock_basis_parallel(fixture_project) -> None:
     ].iloc[0]
     assert stock_q["supply_aggregation"] == "quarter_end"
     assert stock_q["raw_treasury_supply_q"] == 1_220_000_000_000
+
+
+def test_missing_primary_anchor_does_not_admit_legacy_rows(fixture_project) -> None:
+    (fixture_project / "data/raw/tdcest/tdc_tier2_regression_series.csv").unlink()
+    quarterly = build_all(fixture_project)["quarterly_tdc_comparison_panel"]
+    assert quarterly["tdc_tier2_interest_corrected_bank_only_ru_flow"].notna().any()
+    assert not quarterly["is_tdc_aligned"].any()
+    assert quarterly["is_future_or_partial"].all()

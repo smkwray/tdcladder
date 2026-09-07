@@ -20,6 +20,7 @@ upstreams:
     preferred_artifacts:
       - data/processed/tdc_estimates.csv
       - data/processed/tdc_components.csv
+      - data/processed/tdc_tier2_regression_series.csv
     reuse_guidance: Use as quarterly TDC anchor before rebuilding Z.1 inputs.
   tdcpass:
     role: Deposit pass-through and strict-versus-broad comparison context.

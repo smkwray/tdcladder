@@ -18,6 +18,7 @@ required_columns:
 amount_columns:
   tdc_base_bank_only_ru_flow: USD millions
   tdc_tier2_interest_corrected_bank_only_ru_flow: USD millions
+  tdc_tier2_canonical_depository_institution_mmf_rrp_prop_ru_flow: USD millions
   tdc_base_broad_depository_np_cu_ru_flow: USD millions
 expected_columns:
 - name: date
@@ -45,6 +46,8 @@ expected_columns:
 - name: tdc_tier2_interest_corrected_bank_only_ru_flow
   sample_dtype: float64
 - name: tdc_tier2_interest_corrected_broad_depository_np_cu_ru_flow
+  sample_dtype: float64
+- name: tdc_tier2_canonical_depository_institution_mmf_rrp_prop_ru_flow
   sample_dtype: float64
 - name: tdc_tier3_fiscal_corrected_domestic_bank_only_ru_flow
   sample_dtype: float64

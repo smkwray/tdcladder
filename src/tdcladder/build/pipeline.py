@@ -14,6 +14,12 @@ from ..qa import write_qa_outputs
 from ..weights import build_all_weight_families
 from ..weights.fixed import _normalise_security_type
 
+TDC_LEGACY_BANK_ANCHOR = "tdc_tier2_interest_corrected_bank_only_ru_flow"
+TDC_MODERN_DI_MMF_RRP_ANCHOR = "tdc_tier2_canonical_depository_institution_mmf_rrp_prop_ru_flow"
+TDC_LONG_HISTORY_BANK_ANCHOR = "tdc_tier2_regression_mmf_rrp_prop_bank_only_ru_flow"
+TDC_LONG_HISTORY_DI_ANCHOR = "tdc_tier2_regression_mmf_rrp_prop_depository_institution_np_cu_ru_flow"
+TDC_PRIMARY_ANCHOR = TDC_LONG_HISTORY_BANK_ANCHOR
+
 TREASURY_USD_COLUMNS = [
     "raw_treasury_supply_q",
     "liquid_treasury_supply_q",
@@ -37,7 +43,10 @@ USD_MILLION_COLUMNS = [
     "tga_quarter_end",
     "tdc_base_bank_only_ru_flow",
     "tdc_base_broad_depository_np_cu_ru_flow",
-    "tdc_tier2_interest_corrected_bank_only_ru_flow",
+    TDC_LEGACY_BANK_ANCHOR,
+    TDC_MODERN_DI_MMF_RRP_ANCHOR,
+    TDC_LONG_HISTORY_BANK_ANCHOR,
+    TDC_LONG_HISTORY_DI_ANCHOR,
     "tdc_tier3_fiscal_corrected_bank_only_ru_flow",
     "tdc_level_bank_only_sensitivity",
     "fed_tsy_tx",
@@ -397,11 +406,25 @@ def build_quarterly_tdc_comparison(root: str | Path | None, monthly_joined: pd.D
             "quarter",
             "tdc_base_bank_only_ru_flow",
             "tdc_base_broad_depository_np_cu_ru_flow",
-            "tdc_tier2_interest_corrected_bank_only_ru_flow",
+            TDC_LEGACY_BANK_ANCHOR,
+            TDC_MODERN_DI_MMF_RRP_ANCHOR,
             "tdc_tier3_fiscal_corrected_bank_only_ru_flow",
             "tdc_level_bank_only_sensitivity",
         ] if c in tdc.columns]
         out = out.merge(tdc[keep].drop_duplicates("quarter"), on="quarter", how="left")
+
+    regression_tdc = _read_contract(root, "tdcest_tier2_regression_series", required=False)
+    if regression_tdc is not None and "date" in regression_tdc.columns:
+        regression_tdc = regression_tdc.copy()
+        regression_tdc["quarter"] = _quarterify_dates(regression_tdc["date"])
+        keep = [c for c in [
+            "quarter",
+            TDC_LONG_HISTORY_BANK_ANCHOR,
+            TDC_LONG_HISTORY_DI_ANCHOR,
+            "tier2_regression_bank_row_method_tier",
+            "tier2_regression_di_method_tier",
+        ] if c in regression_tdc.columns]
+        out = out.merge(regression_tdc[keep], on="quarter", how="left", validate="many_to_one")
 
     components = _read_contract(root, "tdcest_tdc_components", required=False)
     if components is not None and "date" in components.columns:
@@ -433,7 +456,7 @@ def build_quarterly_tdc_comparison(root: str | Path | None, monthly_joined: pd.D
         end_col = f"{col}_quarter_end"
         if end_col in out.columns:
             out[f"d_{col}_q"] = out.groupby(["weight_family", "supply_basis"])[end_col].diff()
-    tdc_anchor = "tdc_tier2_interest_corrected_bank_only_ru_flow"
+    tdc_anchor = TDC_PRIMARY_ANCHOR
     out["is_tdc_aligned"] = out[tdc_anchor].notna() if tdc_anchor in out.columns else False
     out["is_future_or_partial"] = ~out["is_complete_quarter"] | ~out["is_tdc_aligned"]
     out = _add_quarterly_unit_columns(out)

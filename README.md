@@ -1,8 +1,8 @@
 # tdcladder
 
-`tdcladder` builds a Liquidity-Weighted TDC / Treasury Moneyness Ladder: a companion measure to the Tier 2 interest-corrected bank-only TDC anchor that asks whether the same Treasury finance flow has different monetary meaning depending on whether investors receive bills, FRNs, short coupons, or long-duration coupons.
+`tdcladder` builds a Liquidity-Weighted TDC / Treasury Moneyness Ladder: a companion measure to the long-history Tier 2 regression/MMF-RRP TDC anchor that asks whether the same Treasury finance flow has different monetary meaning depending on whether investors receive bills, FRNs, short coupons, or long-duration coupons.
 
-TDC means Treasury Deposit Creation: a deposit-accounting measure of the part of deposit flows attributed to Treasury operations. The upstream TDC estimates and component definitions live in [`smkwray/tdcest`](https://github.com/smkwray/tdcest). `tdcladder` does not re-estimate TDC; it uses the Tier 2 interest-corrected bank-only RU flow from that project as its comparison anchor.
+TDC means Treasury Deposit Component: a deposit-accounting measure of the part of deposit flows attributed to Treasury operations. The upstream TDC estimates and component definitions live in [`smkwray/tdcest`](https://github.com/smkwray/tdcest). `tdcladder` does not re-estimate TDC; it uses the Tier 2 regression/MMF-RRP bank-only RU flow from that project as its long-history comparison anchor, while retaining the short modern canonical DI/MMF/RRP row as context when available.
 
 The headline object is not a replacement for deposit-accounting TDC. Ordinary TDC tracks the Treasury-attributed component of deposits; `tdcladder` adds a measurement layer:
 
@@ -22,7 +22,7 @@ where `TS` is Treasury supply by maturity/security bucket and `w` is an explicit
 - Package: `tdcladder`
 - Current release status: research toolkit, not a production data service
 - Primary measurement layer: liquidity-weighted Treasury supply by maturity/security bucket
-- Primary TDC anchor: Tier 2 interest-corrected bank-only RU flow
+- Primary TDC anchor: long-history Tier 2 regression/MMF-RRP bank-only RU flow
 - Default Treasury basis: gross accepted auction issuance flow
 - Optional Treasury basis: month-end outstanding stock from FiscalData/MSPD-style inputs
 - Data policy: raw upstream extracts and generated outputs are local artifacts and are ignored by git
@@ -143,7 +143,7 @@ python scripts/analysis/compare_liquidity_measures.py
 python scripts/analysis/sensitivity_weight_ladders.py
 ```
 
-These scripts create descriptive correlations/tables and simple figures comparing raw Treasury supply, liquid Treasury supply, Tier 2 interest-corrected bank-only TDC, deposits, MMFs, ON RRP, and reserves. Treasury supply columns are stored in dollars and now get explicit `_usd` / `_usd_billions` display columns; TDC, tdcpass, and liqsub/H.8/OFR-style macro columns are treated as stored in USD millions and get explicit `_usd_millions` / `_usd_billions` columns. `output/qa/analysis_unit_assumptions.csv` documents those scale rules.
+These scripts create descriptive correlations/tables and simple figures comparing raw Treasury supply, liquid Treasury supply, long-history Tier 2 regression/MMF-RRP TDC, deposits, MMFs, ON RRP, and reserves. Treasury supply columns are stored in dollars and now get explicit `_usd` / `_usd_billions` display columns; TDC, tdcpass, and liqsub/H.8/OFR-style macro columns are treated as stored in USD millions and get explicit `_usd_millions` / `_usd_billions` columns. `output/qa/analysis_unit_assumptions.csv` documents those scale rules.
 
 `output/tables/ladder_interpretation_summary.csv` is the broad summary of raw supply, liquidity-weighted supply, basis-specific bill share, basis-specific WAM, and the Tier 2 TDC anchor. `output/tables/core_measurement_summary.csv` is the narrower headline table: issuance-flow only, fixed baseline plus fixed sensitivity band. `output/tables/exploratory_sidecar_summary.csv` keeps price, turnover, auction-buyer, and Z.1 holder-context families separate as diagnostics. `output/tables/tdc_model_comparison_diagnostics.csv` adds standardized descriptive fit diagnostics for raw supply, liquid supply, bill share, and WAM model variants. Treat all of these as measurement diagnostics, not causal claims.
 `output/tables/latest_results_overview.csv` and `output/tables/latest_results_overview.md` provide a short plain-language snapshot for nontechnical review. `output/tables/monthly_episode_design.csv` and `output/tables/quarterly_tier2_episode_design.csv` are first-pass episode scaffolds for bill-heavy, coupon-heavy, WAM-extension, duration-gap, reserve-drain, MMF-absorption, ON-RRP-drain, TGA-refill, high-rate, and QT regimes. `output/tables/monthly_episode_event_windows.csv` and `output/tables/quarterly_tier2_episode_event_windows.csv` convert those flags into descriptive event windows; their paired `_summary.csv` and `_catalog.csv` files summarize average paths and event counts. These event-window outputs are descriptive triage surfaces, not causal local projections.
