@@ -10,15 +10,14 @@ from ..config import project_root
 from ..contracts import get_contract, validate_all
 from ..io import read_csv, write_csv
 from ..maturities import add_bucket_metadata, normalize_bucket
-from ..qa import write_qa_outputs
+from ..qa import TDC_PRIMARY_ANCHOR, write_qa_outputs
 from ..weights import build_all_weight_families
 from ..weights.fixed import _normalise_security_type
 
 TDC_LEGACY_BANK_ANCHOR = "tdc_tier2_interest_corrected_bank_only_ru_flow"
 TDC_MODERN_DI_MMF_RRP_ANCHOR = "tdc_tier2_canonical_depository_institution_mmf_rrp_prop_ru_flow"
-TDC_LONG_HISTORY_BANK_ANCHOR = "tdc_tier2_regression_mmf_rrp_prop_bank_only_ru_flow"
+TDC_LONG_HISTORY_BANK_ANCHOR = TDC_PRIMARY_ANCHOR
 TDC_LONG_HISTORY_DI_ANCHOR = "tdc_tier2_regression_mmf_rrp_prop_depository_institution_np_cu_ru_flow"
-TDC_PRIMARY_ANCHOR = TDC_LONG_HISTORY_BANK_ANCHOR
 
 TREASURY_USD_COLUMNS = [
     "raw_treasury_supply_q",

@@ -150,6 +150,12 @@ These scripts create descriptive correlations/tables and simple figures comparin
 
 For output navigation, start with `output/tables/release_readiness_report.md` and `output/tables/output_tiers.csv`. They mark which outputs are headline, diagnostic, sidecar, appendix, QA, or episode-design surfaces.
 
+TDC comparisons use only complete quarters with an observed, aligned primary anchor.
+The ladder can build without that optional source, but the comparison script then
+removes its known TDC-derived outputs, writes `blocked_missing_primary_anchor`
+readiness metadata, and exits nonzero. Readiness describes current-run artifacts,
+not approval to publish empirical claims.
+
 ## CLI reference
 
 ```bash

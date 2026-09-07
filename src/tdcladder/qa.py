@@ -9,6 +9,20 @@ from .config import project_root
 from .contracts import load_contracts
 from .io import write_csv
 
+TDC_PRIMARY_ANCHOR = "tdc_tier2_regression_mmf_rrp_prop_bank_only_ru_flow"
+
+
+def eligible_tdc_rows(quarterly: pd.DataFrame) -> pd.DataFrame:
+    """Return the complete, aligned primary-anchor sample for every TDC surface."""
+    required = {TDC_PRIMARY_ANCHOR, "is_tdc_aligned", "is_complete_quarter"}
+    if not required.issubset(quarterly.columns):
+        return quarterly.iloc[:0].copy()
+    anchor = pd.to_numeric(quarterly[TDC_PRIMARY_ANCHOR], errors="coerce")
+    eligible = anchor.notna() & anchor.abs().ne(float("inf"))
+    for flag in ("is_tdc_aligned", "is_complete_quarter"):
+        eligible &= quarterly[flag].astype("string").str.lower().isin(["true", "1"])
+    return quarterly.loc[eligible].copy()
+
 
 def dataset_summary(name: str, df: pd.DataFrame, *, date_col: str | None = None, key_cols: Iterable[str] = ()) -> dict[str, object]:
     out: dict[str, object] = {
@@ -135,22 +149,20 @@ def family_support_matrix(weighted_by_bucket: pd.DataFrame, quarterly: pd.DataFr
     frame["is_model_backed"] = ~status.str.contains("fallback|missing|stub", regex=True)
 
     windows: list[tuple[str, pd.DataFrame]] = [("full_sample", frame)]
-    if quarterly is not None and not quarterly.empty and {"quarter", "is_tdc_aligned"}.issubset(quarterly.columns):
-        q = quarterly.copy()
+    if quarterly is not None and not quarterly.empty:
+        q = eligible_tdc_rows(quarterly)
         q["quarter"] = pd.to_datetime(q["quarter"], errors="coerce").dt.normalize()
-        tdc_quarters = set(q.loc[q["is_tdc_aligned"].fillna(False).astype(bool), "quarter"].dropna())
-        if tdc_quarters:
-            windows.append(("tdc_sample", frame[frame["quarter"].isin(tdc_quarters)]))
-            complete = q["is_complete_quarter"].fillna(False).astype(bool) if "is_complete_quarter" in q.columns else pd.Series(True, index=q.index)
-            latest_vals = q.loc[q["is_tdc_aligned"].fillna(False).astype(bool) & complete, "quarter"].dropna()
-            if not latest_vals.empty:
-                latest_quarter = latest_vals.max()
-                latest = frame[frame["quarter"].eq(latest_quarter)].copy()
-                if not latest.empty:
-                    stock = latest["supply_basis"].eq("outstanding_stock")
-                    stock_latest_month = latest.loc[stock].groupby(["weight_family", "supply_basis"], dropna=False)["month"].transform("max")
-                    latest = latest.loc[~stock | latest["month"].eq(stock_latest_month)]
-                    windows.append(("latest_quarter", latest))
+        keys = ["weight_family", "supply_basis", "quarter"]
+        if not q.empty:
+            aligned = frame.merge(q[keys].drop_duplicates(), on=keys, validate="many_to_one")
+            windows.append(("tdc_sample", aligned))
+            latest_quarter = q["quarter"].max()
+            latest = aligned[aligned["quarter"].eq(latest_quarter)].copy()
+            if not latest.empty:
+                stock = latest["supply_basis"].eq("outstanding_stock")
+                stock_latest_month = latest.loc[stock].groupby(["weight_family", "supply_basis"], dropna=False)["month"].transform("max")
+                latest = latest.loc[~stock | latest["month"].eq(stock_latest_month)]
+                windows.append(("latest_quarter", latest))
 
     rows: list[dict[str, object]] = []
     for window_name, window in windows:

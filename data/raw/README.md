@@ -10,6 +10,7 @@ data/raw/buycurve/auction_allotment_panel_base_slim.csv
 data/raw/buycurve/z1_treasury_holders_clean.csv
 data/raw/liqsub/monthly_liquidity_substitution_panel.csv
 data/raw/liqsub/monthly_liquidity_substitution_panel_analysis.csv
+data/raw/tdcest/tdc_tier2_regression_series.csv
 data/raw/tdcest/tdc_estimates.csv
 data/raw/tdcest/tdc_components.csv
 data/raw/tdcpass/quarterly_panel.csv

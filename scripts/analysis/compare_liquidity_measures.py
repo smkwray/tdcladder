@@ -6,7 +6,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-TDC_ANCHOR_COL = "tdc_tier2_regression_mmf_rrp_prop_bank_only_ru_flow"
+from tdcladder.qa import TDC_PRIMARY_ANCHOR, eligible_tdc_rows
+
+TDC_ANCHOR_COL = TDC_PRIMARY_ANCHOR
 TDC_ANCHOR_LABEL = "Long-history Tier 2 regression/MMF-RRP bank-only RU flow"
 CORE_WEIGHT_FAMILIES = (
     "fixed_baseline",
@@ -146,6 +148,7 @@ def _fit_standardized_model(frame: pd.DataFrame, *, y_col: str, x_cols: list[str
 
 
 def write_tdc_model_comparison_diagnostics(quarterly: pd.DataFrame, out_dir: Path) -> None:
+    quarterly = eligible_tdc_rows(quarterly)
     required = {TDC_ANCHOR_COL, "raw_treasury_supply_q", "liquid_treasury_supply_q"}
     if not required.issubset(quarterly.columns):
         return
@@ -203,7 +206,8 @@ def write_tdc_model_comparison_diagnostics(quarterly: pd.DataFrame, out_dir: Pat
 
 
 def write_ladder_interpretation_table(quarterly: pd.DataFrame, out_dir: Path) -> None:
-    if TDC_ANCHOR_COL not in quarterly.columns:
+    quarterly = eligible_tdc_rows(quarterly)
+    if quarterly.empty:
         return
 
     group_cols = ["weight_family"]
@@ -835,7 +839,8 @@ def write_monthly_episode_candidates(monthly: pd.DataFrame, out_dir: Path) -> No
 
 
 def write_quarterly_episode_design(quarterly: pd.DataFrame, out_dir: Path) -> None:
-    if quarterly.empty or TDC_ANCHOR_COL not in quarterly.columns:
+    quarterly = eligible_tdc_rows(quarterly)
+    if quarterly.empty:
         return
     basis = quarterly.get("supply_basis", pd.Series("issuance_flow", index=quarterly.index))
     panel = quarterly[
@@ -844,10 +849,6 @@ def write_quarterly_episode_design(quarterly: pd.DataFrame, out_dir: Path) -> No
     ].copy()
     if panel.empty:
         return
-    if "is_complete_quarter" in panel.columns:
-        panel = panel[_boolish(panel, "is_complete_quarter")].copy()
-    if "is_tdc_aligned" in panel.columns:
-        panel = panel[_boolish(panel, "is_tdc_aligned")].copy()
     panel = panel.sort_values("quarter").reset_index(drop=True)
     panel = _add_unit_scaled_columns(panel)
     panel["d_raw_weighted_maturity_years_q"] = _numeric(panel, "raw_weighted_maturity_years_q").diff()
@@ -925,7 +926,24 @@ def write_quarterly_episode_design(quarterly: pd.DataFrame, out_dir: Path) -> No
     write_quarterly_event_windows(out, out_dir)
 
 
-def write_output_tier_manifest(out_dir: Path) -> None:
+TDC_DERIVED_FILES = (
+    "quarterly_tdc_comparison_correlations.csv",
+    "ladder_interpretation_summary.csv",
+    "core_measurement_summary.csv",
+    "exploratory_sidecar_summary.csv",
+    "latest_results_overview.csv",
+    "latest_results_overview.md",
+    "tdc_model_comparison_diagnostics.csv",
+    "quarterly_tier2_episode_design.csv",
+    "quarterly_tier2_episode_candidates.csv",
+    "quarterly_tier2_episode_event_catalog.csv",
+    "quarterly_tier2_episode_event_windows.csv",
+    "quarterly_tier2_episode_event_window_summary.csv",
+    "quarterly_tier2_episode_overlap_matrix.csv",
+)
+
+
+def write_output_tier_manifest(out_dir: Path, *, has_eligible_anchor: bool) -> None:
     rows = [
         {
             "path": "output/tables/core_measurement_summary.csv",
@@ -1007,96 +1025,42 @@ def write_output_tier_manifest(out_dir: Path) -> None:
     ]
     manifest = pd.DataFrame(rows)
     manifest["exists"] = manifest["path"].map(lambda rel: (out_dir.parent.parent / rel).exists())
+    manifest.loc[~manifest["exists"], "claim_status"] = "unavailable"
+    if not has_eligible_anchor:
+        dependent = manifest["path"].map(lambda rel: Path(rel).name in TDC_DERIVED_FILES)
+        manifest.loc[dependent, "claim_status"] = "blocked_missing_primary_anchor"
     manifest.to_csv(out_dir / "output_tiers.csv", index=False)
 
 
-def write_release_readiness_report(out_dir: Path) -> None:
-    rows = [
-        {
-            "area": "core_claim",
-            "status": "ready",
-            "evidence": "core_measurement_summary.csv and latest_results_overview.md",
-            "remaining": "Narrative/editorial use only.",
-        },
-        {
-            "area": "supply_basis",
-            "status": "ready",
-            "evidence": "Quarter-summed gross issuance and quarter-end stock basis are both built; stock changes are used for TDC-flow alignment.",
-            "remaining": "Keep stock as context/appendix unless a stock-specific claim is needed.",
-        },
-        {
-            "area": "tdc_anchor",
-            "status": "ready",
-            "evidence": TDC_ANCHOR_COL,
-            "remaining": "Do not promote Tier 1/base TDC as co-equal evidence.",
-        },
-        {
-            "area": "weights",
-            "status": "ready",
-            "evidence": "Active-family gating; price_first_pass inactive; fixed baseline plus fixed band separated from sidecars.",
-            "remaining": "Treat sidecars as diagnostics.",
-        },
-        {
-            "area": "units",
-            "status": "ready",
-            "evidence": "analysis_unit_assumptions.csv plus explicit _usd/_usd_millions/_usd_billions columns.",
-            "remaining": "Use display-scale columns in charts and prose.",
-        },
-        {
-            "area": "episodes",
-            "status": "ready_for_scaffold",
-            "evidence": "monthly and quarterly episode design, event-window, summary, catalog, and overlap tables.",
-            "remaining": "Manual historical review before promotion; optional local projections only after that review.",
-        },
-        {
-            "area": "optional_sidecars",
-            "status": "defer_until_claim_needed",
-            "evidence": "Current analysis pipeline already includes MMF/OFR outcomes, auction buyers, Z.1 context, TRACE turnover, and price sensitivities.",
-            "remaining": "Add dealer/TIC/bank sidecars only for a specific absorption claim.",
-        },
-    ]
-    status = pd.DataFrame(rows)
-    status.to_csv(out_dir / "release_readiness_status.csv", index=False)
-
-    overview = out_dir / "latest_results_overview.md"
-    overview_text = overview.read_text(encoding="utf-8").strip() if overview.exists() else ""
+def write_release_readiness_report(out_dir: Path, *, has_eligible_anchor: bool) -> None:
+    """Describe current-run artifacts; never grant a public release decision."""
+    evidence = {
+        "core_claim": ("core_measurement_summary.csv", "latest_results_overview.md"),
+        "tdc_anchor": ("ladder_interpretation_summary.csv",),
+        "episodes": ("quarterly_tier2_episode_design.csv",),
+        "model_diagnostics": ("tdc_model_comparison_diagnostics.csv",),
+    }
+    rows = []
+    for area, paths in evidence.items():
+        available = all((out_dir / name).exists() for name in paths)
+        status = "available_for_review" if available else "unavailable"
+        if not has_eligible_anchor:
+            status = "blocked_missing_primary_anchor"
+        rows.append({"area": area, "status": status, "evidence": ";".join(paths)})
+    pd.DataFrame(rows).to_csv(out_dir / "release_readiness_status.csv", index=False)
     lines = [
-        "# tdcladder Release Readiness",
+        "# tdcladder Analysis Readiness",
         "",
-        "Public release status: ready for public code release. The remaining work is interpretation, manual episode review, and optional sidecars only if a specific claim needs them.",
+        "Current-run artifacts only; this report does not approve publication or empirical claims.",
+        "TDC comparisons require a complete quarter with an aligned, observed primary anchor.",
+        "Liquidity weights are measurement assumptions; comparisons remain descriptive.",
         "",
-        "## Claim Boundary",
-        "",
-        "- Core object: liquidity-weighted Treasury composition ladder.",
-        "- TDC anchor: long-history Tier 2 regression/MMF-RRP bank-only RU flow; legacy H15/bank-only and short modern canonical rows remain context/sensitivity columns where imported.",
-        "- Headline basis: gross accepted auction issuance flow.",
-        "- Headline weights: fixed baseline plus fixed sensitivity band.",
-        "- Stock, price, turnover, auction-buyer, and Z.1 holder-context outputs are diagnostic or appendix surfaces.",
-        "- Liquidity weights are measurement assumptions, not structural facts.",
-        "",
-        "## Promoted Files",
-        "",
-        "- `output/tables/core_measurement_summary.csv`",
-        "- `output/tables/latest_results_overview.md`",
-        "- `output/tables/output_tiers.csv`",
-        "- `output/qa/family_support_matrix.csv`",
-        "- `output/qa/analysis_unit_assumptions.csv`",
-        "",
-        "## Episode Files",
-        "",
-        "- `output/tables/monthly_episode_design.csv`",
-        "- `output/tables/monthly_episode_event_window_summary.csv`",
-        "- `output/tables/monthly_episode_overlap_matrix.csv`",
-        "- `output/tables/quarterly_tier2_episode_design.csv`",
-        "- `output/tables/quarterly_tier2_episode_event_window_summary.csv`",
-        "- `output/tables/quarterly_tier2_episode_overlap_matrix.csv`",
-        "",
-        "## Latest Results Snapshot",
-        "",
-        overview_text,
-        "",
+        *[f"- {row['area']}: {row['status']}" for row in rows],
     ]
-    (out_dir / "release_readiness_report.md").write_text("\n".join(lines), encoding="utf-8")
+    overview = out_dir / "latest_results_overview.md"
+    if has_eligible_anchor and overview.exists():
+        lines.extend(["", "## Latest Results Snapshot", "", overview.read_text(encoding="utf-8").strip()])
+    (out_dir / "release_readiness_report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def main() -> int:
@@ -1126,11 +1090,19 @@ def main() -> int:
     corr = monthly.groupby(group_cols)[keep].corr().reset_index()
     out_dir = root / "output/tables"
     out_dir.mkdir(parents=True, exist_ok=True)
+    # Remove only the known generated TDC surfaces before evaluating this run.
+    for name in (*TDC_DERIVED_FILES, "output_tiers.csv", "release_readiness_status.csv", "release_readiness_report.md"):
+        (out_dir / name).unlink(missing_ok=True)
     corr.to_csv(out_dir / "monthly_liquidity_measure_correlations.csv", index=False)
     write_monthly_episode_candidates(monthly, out_dir)
 
-    if quarterly_path.exists():
-        quarterly = pd.read_csv(quarterly_path, parse_dates=["quarter"])
+    quarterly = pd.read_csv(quarterly_path, parse_dates=["quarter"]) if quarterly_path.exists() else pd.DataFrame()
+    quarterly = eligible_tdc_rows(quarterly)
+    if quarterly.empty:
+        write_output_tier_manifest(out_dir, has_eligible_anchor=False)
+        write_release_readiness_report(out_dir, has_eligible_anchor=False)
+        return 1
+    else:
         quarterly = _add_unit_scaled_columns(quarterly)
         stock = quarterly["supply_basis"].eq("outstanding_stock") if "supply_basis" in quarterly.columns else pd.Series(False, index=quarterly.index)
         quarterly["raw_supply_tdc_aligned"] = pd.to_numeric(quarterly["raw_treasury_supply_q"], errors="coerce")
@@ -1157,8 +1129,8 @@ def main() -> int:
         write_ladder_interpretation_table(quarterly, out_dir)
         write_tdc_model_comparison_diagnostics(quarterly, out_dir)
         write_quarterly_episode_design(quarterly, out_dir)
-        write_output_tier_manifest(out_dir)
-        write_release_readiness_report(out_dir)
+        write_output_tier_manifest(out_dir, has_eligible_anchor=True)
+        write_release_readiness_report(out_dir, has_eligible_anchor=True)
 
     try:
         import matplotlib.pyplot as plt
