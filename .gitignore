@@ -52,3 +52,13 @@ __pycache__/
 .DS_Store
 .vscode/
 .idea/
+
+# Private local configuration
+.env.*
+.private-denylist
+.*-private-denylist
+CLAUDE.md
+.codex/
+.claude/
+.cursor/
+.worktrees/
