@@ -1,183 +1,105 @@
 # tdcladder
 
-`tdcladder` builds a liquidity-weighted Treasury supply by maturity and security type. It compares issuance and outstanding stocks under explicit liquidity weights with the measured Treasury Deposit Component (TDC). Bills, floating-rate notes (FRNs), and short and long coupon securities remain separate buckets.
+tdcladder builds monthly and quarterly panels of liquidity-weighted US Treasury supply by maturity bucket and security type, and compares them with the Treasury Deposit Component (TDC). It reads gross accepted Treasury auction issuance (plus optional month-end outstanding stocks and turnover data), applies seven explicit liquidity-weight schemes across 11 maturity buckets from 0–3 months to 30+ years, and writes clean CSV panels, data-quality reports, and descriptive comparison tables.
 
-TDC means Treasury Deposit Component: a deposit-accounting measure of the part of deposit flows attributed to Treasury operations. The upstream TDC estimates and component definitions live in [`smkwray/tdcest`](https://github.com/smkwray/tdcest). `tdcladder` does not re-estimate TDC; it uses the Tier 2 regression/MMF-RRP bank-only rest-of-system flow from that project as its long-history comparison anchor, while retaining the short modern canonical DI/MMF/RRP row as context when available.
-
-The headline object is not a replacement for deposit-accounting TDC. Ordinary TDC tracks the Treasury-attributed component of deposits; `tdcladder` adds a measurement layer:
+For each period `t`, liquidity-weighted Treasury supply is:
 
 ```text
-Liquidity-weighted Treasury supply at time t
-  = sum over maturity/security buckets m of:
-      liquidity weight for bucket m at time t
-      x Treasury supply in bucket m at time t
-
 LTS_t = sum_m w_{m,t} * TS_{m,t}
 ```
 
-where `TS` is Treasury supply by maturity/security bucket and `w` is an explicit moneyness/liquidity assumption. The weights are labeled measurement assumptions, not structural facts.
+where `TS_{m,t}` is Treasury supply in maturity and security bucket `m` (bills, floating-rate notes (FRNs), nominal coupons, and TIPS remain separate) and `w_{m,t}` is an explicit liquidity weight.
 
-## Project Metadata
+## Data
 
-- Package: `tdcladder`
-- Current release status: research toolkit, not a production data service
-- Primary measurement layer: liquidity-weighted Treasury supply by maturity/security bucket
-- Primary TDC anchor: long-history bank-only proxy with money-market fund (MMF) and overnight reverse repurchase agreement (ON RRP) routing adjustments
-- Default Treasury basis: gross accepted auction issuance flow
-- Optional Treasury basis: month-end outstanding stock from FiscalData/MSPD-style inputs
-- Data policy: raw upstream extracts and generated outputs are local artifacts and are ignored by git
-- Claim boundary: descriptive measurement and episode-design surfaces only; no structural moneyness or causal claims are implied by the weights
+Input definitions live under `config/source_contracts/` and expect local CSV files under `data/raw/<upstream>/`. Run `tdcladder describe-contracts` to list every configured path.
 
-## Repository layout
+- Required: monthly gross accepted auction issuance by maturity bucket (`data/raw/buycurve/monthly_issuance_maturity_panel.csv`).
+- Optional Treasury stock: month-end marketable debt outstanding (`data/raw/treasury/monthly_outstanding_by_maturity.csv`), downloaded directly from the US Treasury Fiscal Data API (Monthly Statement of the Public Debt, Table 3 Marketable) via `tdcladder download-treasury-stock`. When present, `tdcladder build` produces both outstanding-stock and issuance-flow series.
+- Optional turnover: secondary-market volume by security type (`data/raw/market_liquidity/turnover_by_maturity.csv`), built from public FINRA TRACE Treasury aggregate workbooks (`.xlsx`/`.xls`/`.zip`) via `tdcladder build-trace-turnover`.
+- Optional comparison exports under `data/raw/`: sibling CSVs for auction allotments and Financial Accounts of the United States (Z.1) Treasury holders (`buycurve`), monthly deposits, money market funds (MMFs), overnight reverse repo (ON RRP), reserves, and money-market rate spreads (`liqsub`), quarterly measured TDC and components (`tdcest`), and quarterly deposit pass-through series (`tdcpass`).
 
-```text
-config/                 source contracts, maturity buckets, weight assumptions
-config/source_contracts/ YAML contracts for upstream exports
-src/tdcladder/          package code and CLI
-data/raw/               explicit local upstream copies; ignored by git
-data/interim/           normalized source-level files; ignored by git
-data/clean/             analysis-ready panels; ignored by git
-output/                 QA, manifests, tables, figures; ignored by git
-scripts/analysis/       starter analysis scripts
-tests/                  synthetic fixtures and focused tests
-```
-
-Local planning notes, raw data, and generated outputs are intentionally excluded from version control. The public repository should contain code, contracts, configuration, tests, and lightweight placeholders only.
+No API keys are required. Raw extracts and generated outputs are gitignored.
 
 ## Install
 
-Python 3.11 or later is required. From the repository root:
+Requires Python 3.11 or newer. From the repository root:
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 python -B -m pip install -e '.[dev,analysis]'
-python -B -m pytest -q
-ruff check .
-tdcladder describe-contracts
 ```
 
-## Supply upstream files locally
+## Usage
 
-Production code never hard-codes machine-specific upstream paths. Copy the upstream exports into `data/raw/<upstream>/` either manually or through the import gate.
+Inspect configured inputs and copy local sibling exports into `data/raw/<upstream>/`:
 
 ```bash
+tdcladder describe-contracts
 tdcladder copy-upstream --upstream buycurve --source-root ../buycurve
 tdcladder copy-upstream --upstream liqsub   --source-root ../liqsub
 tdcladder copy-upstream --upstream tdcest   --source-root ../tdcest
 tdcladder copy-upstream --upstream tdcpass  --source-root ../tdcpass
-
 tdcladder validate-sources
 ```
 
-Expected core local copies are documented in `data/raw/README.md` and `config/source_contracts/*.yaml`.
-When present, buycurve's normalized Z.1 holder panel is copied to
-`data/raw/buycurve/z1_treasury_holders_clean.csv` and used only as aggregate
-holder-stock context.
+`copy-upstream` accepts `--overwrite`; `validate-sources` accepts `--required-only` and `--upstream`.
 
-The default flow basis is `issuance_flow`, using buycurve gross accepted auction
-amounts by month and maturity bucket. If a project-local
-`data/raw/treasury/monthly_outstanding_by_maturity.csv` file is supplied, the
-same build also emits an `outstanding_stock` basis in parallel. The stock path is
-intended for MSPD/FiscalData-style month-end outstanding amounts and is a
-sensitivity surface, not a replacement for the flow basis.
-
-To refresh the optional stock-basis input directly from FiscalData:
+Optionally fetch Treasury stock data from Fiscal Data or parse FINRA TRACE workbooks:
 
 ```bash
 tdcladder download-treasury-stock
+tdcladder build-trace-turnover --source-path PATH_TO_TRACE_WORKBOOKS
 ```
 
-To build the optional turnover input from FINRA public TRACE Treasury aggregate
-workbooks:
+Pass `--from-raw` to `download-treasury-stock` to rebuild from an existing `data/raw/treasury/mspd_table_3_market.csv` without downloading.
 
-```bash
-tdcladder build-trace-turnover --source-path <path-to-trace-workbooks>
-```
-
-## Build the ladder
+Build the monthly supply panel, joined monthly panel, quarterly TDC comparison panel, and data-quality reports:
 
 ```bash
 tdcladder build
 ```
 
-Main outputs:
+Pass `--strict` to fail if optional comparison inputs are absent, or `--skip-qa` to omit quality reports.
 
-```text
-data/interim/raw_treasury_supply_by_maturity.csv
-data/clean/liquidity_weights.csv
-data/clean/liquidity_weighted_treasury_supply_by_bucket.csv
-data/clean/monthly_ladder_panel.csv
-data/clean/monthly_ladder_liqsub_panel.csv
-data/clean/quarterly_tdc_comparison_panel.csv
-output/qa/source_manifest.csv
-output/qa/dataset_summary.csv
-output/qa/missingness.csv
-output/qa/duplicate_keys.csv
-output/qa/weight_bounds.csv
-output/qa/weight_source_status.csv
-output/qa/family_support_matrix.csv
-output/qa/unit_checks.csv
-output/qa/analysis_unit_assumptions.csv
-output/qa/qa_report.md
-```
-
-The monthly panel is the primary frequency. Quarterly aggregation is used for TDC comparison and Z.1-aligned interpretation.
-
-## Weight families
-
-The build includes seven active weight families. The fixed families define the
-core measurement range; the remaining families provide exploratory sensitivity
-checks.
-
-| Family | Role |
-|---|---|
-| `fixed_baseline` | Transparent maturity/security-type ladder for exposition. |
-| `fixed_conservative_duration` | Sensitivity that penalizes duration more aggressively. |
-| `fixed_cash_like_generous` | Sensitivity that treats short Treasury instruments more generously. |
-| `price_convenience_yield` | Explicit convenience-yield sensitivity using bill-IORB specialness and SOFR-IORB funding-pressure penalty. |
-| `turnover_duration_adjusted` | Exploratory turnover family that never lets high long-bond trading volume erase duration risk. |
-| `holder_revealed_first_pass` | Exploratory buyer-composition weight using auction allotments, blended with the fixed ladder to retain duration discipline. |
-| `holder_stock_context_z1` | Diagnostic quarterly Z.1 holder-stock context blended with the fixed ladder; aggregate holders do not identify security-level moneyness. |
-
-## Descriptive analysis
-
-After `tdcladder build`:
+Run the descriptive comparison and weight-sensitivity scripts after `tdcladder build`:
 
 ```bash
 python scripts/analysis/compare_liquidity_measures.py
 python scripts/analysis/sensitivity_weight_ladders.py
 ```
 
-These scripts create descriptive correlations/tables and simple figures comparing raw Treasury supply, liquid Treasury supply, long-history Tier 2 regression/MMF-RRP TDC, deposits, MMFs, ON RRP, and reserves. Treasury supply columns are stored in dollars and get explicit `_usd` / `_usd_billions` display columns; TDC, tdcpass, and liqsub/H.8/OFR-style macro columns are treated as stored in USD millions and get explicit `_usd_millions` / `_usd_billions` columns. `output/qa/analysis_unit_assumptions.csv` documents those scale rules.
+`config/weight_families.yaml` activates seven liquidity-weight schemes: three fixed maturity ladders (a baseline ladder, a steeper duration penalty, and higher weights on short maturities) plus four data-driven schemes blending the baseline ladder with money-market convenience yields (bill–IORB and SOFR–IORB spreads), FINRA TRACE turnover with a duration penalty, auction buyer composition, and quarterly Z.1 holder stocks.
 
-`output/tables/ladder_interpretation_summary.csv` is the broad summary of raw supply, liquidity-weighted supply, basis-specific bill share, basis-specific weighted-average maturity (WAM), and the Tier 2 TDC anchor. `output/tables/core_measurement_summary.csv` is the narrower headline table: issuance-flow only, fixed baseline plus fixed sensitivity band. `output/tables/exploratory_sidecar_summary.csv` keeps price, turnover, auction-buyer, and Z.1 holder-context families separate as diagnostics. `output/tables/tdc_model_comparison_diagnostics.csv` adds standardized descriptive fit diagnostics for raw supply, liquid supply, bill share, and WAM model variants. Treat all of these as measurement diagnostics, not causal claims.
-`output/tables/latest_results_overview.csv` and `output/tables/latest_results_overview.md` provide a short plain-language snapshot for nontechnical review. `output/tables/monthly_episode_design.csv` and `output/tables/quarterly_tier2_episode_design.csv` define descriptive episode indicators for bill-heavy, coupon-heavy, WAM-extension, duration-gap, reserve-drain, MMF-absorption, ON-RRP-drain, TGA-refill, high-rate, and QT regimes. `output/tables/monthly_episode_event_windows.csv` and `output/tables/quarterly_tier2_episode_event_windows.csv` convert those flags into descriptive event windows; their paired `_summary.csv` and `_catalog.csv` files summarize average paths and event counts. These event-window outputs are descriptive triage surfaces, not causal local projections.
+## Output
 
-For output navigation, start with `output/tables/release_readiness_report.md` and `output/tables/output_tiers.csv`. They mark which outputs are headline, diagnostic, sidecar, appendix, QA, or episode-design surfaces.
+`tdcladder build` writes clean monthly and quarterly CSV panels under `data/clean/` and quality checks under `output/qa/`. The analysis scripts write comparison tables and charts under `output/tables/` and `output/figures/`.
 
-TDC comparisons use only complete quarters with an observed, aligned primary anchor.
-The ladder can build without that optional source, but the comparison script then
-removes its known TDC-derived outputs, writes `blocked_missing_primary_anchor`
-readiness metadata, and exits nonzero. Readiness describes current-run artifacts,
-not approval to publish empirical claims.
+Main files:
 
-## CLI reference
+| File | Description |
+|---|---|
+| `data/clean/monthly_ladder_panel.csv` | Monthly raw Treasury supply, liquidity-weighted supply, bill share, and weighted-average maturity (WAM), in US dollars and years |
+| `data/clean/quarterly_tdc_comparison_panel.csv` | Quarterly Treasury supply aligned with quarterly measured TDC (supply in US dollars, TDC in USD millions) |
+| `data/clean/liquidity_weights.csv` | Monthly liquidity weights by weighting scheme, maturity bucket, and security type |
+| `output/qa/qa_report.md` | Summary of missingness, duplicate keys, weight bounds, and unit checks |
+| `output/tables/latest_results_overview.md` | Summary of descriptive comparisons and weight-sensitivity checks |
+
+Bucket-level weighted supply, joined monthly deposit and money-market panels, individual quality CSVs, correlation and event-window tables, and raw-versus-liquid supply charts are written alongside them. Analysis tables scale Treasury supply (stored in US dollars) and macro balance-sheet series (stored in USD millions) to USD billions.
+
+## Limits
+
+- Liquidity weights are explicit sensitivity assumptions. Short Treasuries serve as near-money for institutional cash investors while remaining distinct from bank deposits.
+- High secondary-market turnover in long bonds reflects trading volume under duration risk, so the turnover-based weighting scheme keeps a duration penalty.
+- Quarterly TDC comparisons use complete quarters aligned with quarterly measured TDC (in USD millions) from the optional `tdcest` export. Without that export, `tdcladder build` succeeds while `compare_liquidity_measures.py` skips TDC tables and exits nonzero.
+- Correlations, standardized model diagnostics, episode flags, and event windows written by `scripts/analysis/` are descriptive diagnostics.
+
+## Tests
+
+The test suite runs offline on synthetic fixtures:
 
 ```bash
-tdcladder validate-sources [--required-only]
-tdcladder copy-upstream --upstream buycurve --source-root ../buycurve [--overwrite]
-tdcladder download-treasury-stock
-tdcladder build-trace-turnover --source-path <path-to-trace-workbooks>
-tdcladder build [--strict] [--skip-qa]
-tdcladder describe-contracts
+python -B -m pytest -q
+ruff check .
 ```
-
-`--strict` makes missing optional comparison inputs fatal. Without it, the build proceeds with available local files and records missingness in QA outputs.
-
-## Interpretation guardrails
-
-- Liquidity weights are assumptions and sensitivity surfaces, not structural constants.
-- Bills, FRNs, and short coupons can be money-like for institutional cash investors, but they are not checking deposits.
-- High trading volume in a long bond is market liquidity, not the same as money-likeness; duration risk remains central.
-- Weekly `liqsub` outputs are intentionally excluded from the headline build unless explicit claim-readiness gates are added.
