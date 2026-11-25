@@ -1,6 +1,6 @@
 # tdcladder
 
-tdcladder builds monthly and quarterly panels of liquidity-weighted US Treasury supply by maturity bucket and security type, and compares them with the Treasury Deposit Component (TDC). It reads gross accepted Treasury auction issuance (plus optional month-end outstanding stocks and turnover data), applies seven explicit liquidity-weight schemes across 11 maturity buckets from 0–3 months to 30+ years, and writes clean CSV panels, data-quality reports, and descriptive comparison tables.
+tdcladder builds monthly and quarterly panels of liquidity-weighted US Treasury supply by maturity bucket and security type, and compares them with the Treasury Deposit Component (TDC), the part of the change in deposits at US banks and credit unions that comes from Treasury payments and trades in Treasury securities, as measured by [tdcest](https://github.com/smkwray/tdcest). It reads gross accepted Treasury auction issuance (plus optional month-end outstanding stocks and turnover data), applies seven liquidity-weight schemes across 11 maturity buckets from 0–3 months to 30+ years, and writes clean CSV panels, data-quality reports, and descriptive comparison tables.
 
 For each period `t`, liquidity-weighted Treasury supply is:
 
@@ -8,18 +8,18 @@ For each period `t`, liquidity-weighted Treasury supply is:
 LTS_t = sum_m w_{m,t} * TS_{m,t}
 ```
 
-where `TS_{m,t}` is Treasury supply in maturity and security bucket `m` (bills, floating-rate notes (FRNs), nominal coupons, and TIPS remain separate) and `w_{m,t}` is an explicit liquidity weight.
+where `TS_{m,t}` is Treasury supply in maturity and security bucket `m` (bills, floating-rate notes, nominal coupons, and Treasury Inflation-Protected Securities (TIPS) remain separate) and `w_{m,t}` is the liquidity weight for that bucket.
 
 ## Data
 
 Input definitions live under `config/source_contracts/` and expect local CSV files under `data/raw/<upstream>/`. Run `tdcladder describe-contracts` to list every configured path.
 
-- Required: monthly gross accepted auction issuance by maturity bucket (`data/raw/buycurve/monthly_issuance_maturity_panel.csv`).
+- Required: monthly gross accepted auction issuance by maturity bucket from [buycurve](https://github.com/smkwray/buycurve) (`data/raw/buycurve/monthly_issuance_maturity_panel.csv`).
 - Optional Treasury stock: month-end marketable debt outstanding (`data/raw/treasury/monthly_outstanding_by_maturity.csv`), downloaded directly from the US Treasury Fiscal Data API (Monthly Statement of the Public Debt, Table 3 Marketable) via `tdcladder download-treasury-stock`. When present, `tdcladder build` produces both outstanding-stock and issuance-flow series.
-- Optional turnover: secondary-market volume by security type (`data/raw/market_liquidity/turnover_by_maturity.csv`), built from public FINRA TRACE Treasury aggregate workbooks (`.xlsx`/`.xls`/`.zip`) via `tdcladder build-trace-turnover`.
-- Optional comparison exports under `data/raw/`: sibling CSVs for auction allotments and Financial Accounts of the United States (Z.1) Treasury holders (`buycurve`), monthly deposits, money market funds (MMFs), overnight reverse repo (ON RRP), reserves, and money-market rate spreads (`liqsub`), quarterly measured TDC and components (`tdcest`), and quarterly deposit pass-through series (`tdcpass`).
+- Optional turnover: secondary-market volume by security type (`data/raw/market_liquidity/turnover_by_maturity.csv`), built from the public Treasury aggregate workbooks (`.xlsx`/`.xls`/`.zip`) of the Financial Industry Regulatory Authority's Trade Reporting and Compliance Engine (FINRA TRACE) via `tdcladder build-trace-turnover`.
+- Optional comparison exports under `data/raw/`: CSVs from sibling repositories for auction allotments and Financial Accounts of the United States (Z.1) Treasury holders (`buycurve`), monthly deposits, money market funds (MMFs), overnight reverse repo (ON RRP), reserves, and money-market rate spreads ([liqsub](https://github.com/smkwray/liqsub)), quarterly measured TDC and components ([tdcest](https://github.com/smkwray/tdcest)), and quarterly deposit pass-through series ([tdcpass](https://github.com/smkwray/tdcpass)).
 
-No API keys are required. Raw extracts and generated outputs are gitignored.
+A real build therefore needs a `buycurve` checkout; the test suite runs on synthetic fixtures without any sibling repository. No API keys are required. Raw extracts and generated outputs are gitignored.
 
 ## Install
 
@@ -70,7 +70,9 @@ python scripts/analysis/compare_liquidity_measures.py
 python scripts/analysis/sensitivity_weight_ladders.py
 ```
 
-`config/weight_families.yaml` activates seven liquidity-weight schemes: three fixed maturity ladders (a baseline ladder, a steeper duration penalty, and higher weights on short maturities) plus four data-driven schemes blending the baseline ladder with money-market convenience yields (bill–IORB and SOFR–IORB spreads), FINRA TRACE turnover with a duration penalty, auction buyer composition, and quarterly Z.1 holder stocks.
+Without the `tdcest` export, `compare_liquidity_measures.py` writes the monthly tables, skips the TDC tables, and exits nonzero.
+
+`config/weight_families.yaml` activates seven liquidity-weight schemes: three fixed maturity ladders (a baseline ladder, a steeper duration penalty, and higher weights on short maturities) plus four data-driven schemes blending the baseline ladder with money-market convenience yields (the spreads of bill yields and the Secured Overnight Financing Rate over the interest rate on reserve balances), FINRA TRACE turnover with a duration penalty, auction buyer composition, and quarterly Z.1 holder stocks.
 
 ## Output
 
@@ -90,10 +92,10 @@ Bucket-level weighted supply, joined monthly deposit and money-market panels, in
 
 ## Limits
 
-- Liquidity weights are explicit sensitivity assumptions. Short Treasuries serve as near-money for institutional cash investors while remaining distinct from bank deposits.
+- Liquidity weights are assumptions; the seven schemes show how results change across them. Short Treasuries serve as near-money for institutional cash investors while remaining distinct from bank deposits.
 - High secondary-market turnover in long bonds reflects trading volume under duration risk, so the turnover-based weighting scheme keeps a duration penalty.
-- Quarterly TDC comparisons use complete quarters aligned with quarterly measured TDC (in USD millions) from the optional `tdcest` export. Without that export, `tdcladder build` succeeds while `compare_liquidity_measures.py` skips TDC tables and exits nonzero.
-- Correlations, standardized model diagnostics, episode flags, and event windows written by `scripts/analysis/` are descriptive diagnostics.
+- Quarterly TDC comparisons use complete quarters aligned with quarterly measured TDC (in USD millions) from the optional `tdcest` export.
+- Correlations, standardized model diagnostics, episode flags, and event windows written by `scripts/analysis/` are descriptive and do not identify causal effects.
 
 ## Tests
 
@@ -103,3 +105,7 @@ The test suite runs offline on synthetic fixtures:
 python -B -m pytest -q
 ruff check .
 ```
+
+## License
+
+MIT. See [LICENSE](LICENSE).
